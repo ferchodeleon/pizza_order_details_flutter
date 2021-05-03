@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pizza_order/model/ingredient.dart';
 
-class PizzaOrderDetails extends StatefulWidget {
+class PizzaOrderDetails extends StatelessWidget {
   const PizzaOrderDetails({Key key}) : super(key: key);
-
-  @override
-  _PizzaOrderDetailsState createState() => _PizzaOrderDetailsState();
-}
-
-class _PizzaOrderDetailsState extends State<PizzaOrderDetails> {
-  final _listIngredients = <Ingredient>[];
 
   @override
   Widget build(BuildContext context) {
@@ -72,9 +65,16 @@ class _PizzaOrderDetailsState extends State<PizzaOrderDetails> {
   }
 }
 
-class PizzaDetails extends StatelessWidget {
+class PizzaDetails extends StatefulWidget {
   const PizzaDetails({Key key}) : super(key: key);
 
+  @override
+  _PizzaDetailsState createState() => _PizzaDetailsState();
+}
+
+class _PizzaDetailsState extends State<PizzaDetails> {
+  final _listIngredients = <Ingredient>[];
+  bool _focused = false;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -82,24 +82,50 @@ class PizzaDetails extends StatelessWidget {
         Expanded(
             child: DragTarget<Ingredient>(
           onAccept: (ingredient) {
+            setState(() {
+              _focused = false;
+            });
             print('on accept');
           },
           onWillAccept: (ingredient) {
-            print('on will accept');
+            print('will accept');
+            setState(() {
+              _focused = true;
+            });
+            for (Ingredient i in _listIngredients) {
+              if (i.compare(ingredient)) {
+                return false;
+              }
+            }
+            _listIngredients.add(ingredient);
+            return true;
           },
           onLeave: (ingredient) {
+            setState(() {
+              _focused = false;
+            });
             print('on leave');
           },
           builder: (context, list, rejects) {
-            return Stack(
-              children: [
-                Image.asset('assets/dish.png'),
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Image.asset('assets/pizza-1.png'),
-                )
-              ],
-            );
+            return LayoutBuilder(builder: (context, constraints) {
+              return Center(
+                child: AnimatedContainer(
+                  duration: Duration(milliseconds: 400),
+                  height: _focused
+                      ? constraints.maxHeight
+                      : constraints.maxHeight - 50,
+                  child: Stack(
+                    children: [
+                      Image.asset('assets/dish.png'),
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Image.asset('assets/pizza-1.png'),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            });
           },
         )),
         const SizedBox(height: 5.0),
@@ -183,6 +209,7 @@ class PizzaIngredientsItem extends StatelessWidget {
     return Center(
       child: Draggable(
         feedback: child,
+        data: ingredient,
         child: Padding(
           padding: const EdgeInsets.all(10.0),
           child: child,
