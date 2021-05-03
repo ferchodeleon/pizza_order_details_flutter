@@ -1,6 +1,8 @@
 class Ingredient {
   const Ingredient(this.image);
   final String image;
+
+  bool compare(Ingredient ingredient) => ingredient.image == image;
 }
 
 final ingredients = const <Ingredient>[
