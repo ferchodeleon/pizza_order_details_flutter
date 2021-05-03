@@ -6,6 +6,10 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Pizza Order', home: PizzaOrderDetails());
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Pizza Order',
+      home: PizzaOrderDetails(),
+    );
   }
 }
