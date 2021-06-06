@@ -57,7 +57,11 @@ class PizzaOrderDetails extends StatelessWidget {
             width: _pizzaSizeButton,
             height: _pizzaSizeButton,
             left: MediaQuery.of(context).size.width / 2 - _pizzaSizeButton / 2,
-            child: PizzaCartButton(),
+            child: PizzaCartButton(
+              onTap: () {
+                print('cart');
+              },
+            ),
           )
         ],
       ),
@@ -72,104 +76,286 @@ class PizzaDetails extends StatefulWidget {
   _PizzaDetailsState createState() => _PizzaDetailsState();
 }
 
-class _PizzaDetailsState extends State<PizzaDetails> {
+class _PizzaDetailsState extends State<PizzaDetails>
+    with SingleTickerProviderStateMixin {
   final _listIngredients = <Ingredient>[];
   bool _focused = false;
-  int pizzaPrice = 15;
+  int _pizzaPrice = 15;
+  AnimationController _animationController;
+  List<Animation> _animationList = <Animation>[];
+  BoxConstraints _pizzaConstrains;
+
+  Widget _buildIngredientsWidget() {
+    List<Widget> elements = [];
+    if (_animationList.isNotEmpty) {
+      for (int i = 0; i < _listIngredients.length; i++) {
+        Ingredient ingredient = _listIngredients[i];
+        for (int j = 0; j < ingredient.positions.length; j++) {
+          final animation = _animationList[j];
+          final position = ingredient.positions[j];
+          final positionX = position.dx;
+          final positionY = position.dy;
+          final _ingredientWidget = Image.asset(ingredient.image, height: 40.0);
+
+          if (i == _listIngredients.length - 1) {
+            double fromX = 0.0, fromY = 0.0;
+            if (j < 1) {
+              fromX = -_pizzaConstrains.maxWidth * (1 - animation.value);
+            } else if (j < 2) {
+              fromX = _pizzaConstrains.maxWidth * (1 - animation.value);
+            } else if (j < 4) {
+              fromY = -_pizzaConstrains.maxHeight * (1 - animation.value);
+            } else {
+              fromY = _pizzaConstrains.maxHeight * (1 - animation.value);
+            }
+
+            final opacity = animation.value;
+
+            if (animation.value > 0) {
+              elements.add(
+                Opacity(
+                  opacity: opacity,
+                  child: Transform(
+                      transform: Matrix4.identity()
+                        ..translate(
+                          fromX + _pizzaConstrains.maxWidth * positionX,
+                          fromY + _pizzaConstrains.maxHeight * positionY,
+                        ),
+                      child: _ingredientWidget),
+                ),
+              );
+            }
+          } else {
+            elements.add(
+              Transform(
+                transform: Matrix4.identity()
+                  ..translate(
+                    _pizzaConstrains.maxWidth * positionX,
+                    _pizzaConstrains.maxHeight * positionY,
+                  ),
+                child: _ingredientWidget,
+              ),
+            );
+          }
+        }
+      }
+      return Stack(
+        children: elements,
+      );
+    }
+    return SizedBox.fromSize();
+  }
+
+  void _buildIngredientsAnimation() {
+    _animationList.clear();
+    _animationList.add(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Interval(0.0, 0.8, curve: Curves.decelerate),
+      ),
+    );
+    _animationList.add(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Interval(0.2, 0.8, curve: Curves.decelerate),
+      ),
+    );
+    _animationList.add(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Interval(0.4, 1.0, curve: Curves.decelerate),
+      ),
+    );
+    _animationList.add(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Interval(0.1, 0.7, curve: Curves.decelerate),
+      ),
+    );
+    _animationList.add(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Interval(0.3, 1.0, curve: Curves.decelerate),
+      ),
+    );
+  }
+
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
-        Expanded(
-          child: DragTarget<Ingredient>(
-            onAccept: (ingredient) {
-              setState(() {
-                _focused = false;
-                pizzaPrice++;
-              });
-              print('on accept');
-            },
-            onWillAccept: (ingredient) {
-              print('will accept');
-              setState(() {
-                _focused = true;
-              });
-              for (Ingredient i in _listIngredients) {
-                if (i.compare(ingredient)) {
-                  return false;
-                }
-              }
-              _listIngredients.add(ingredient);
-              return true;
-            },
-            onLeave: (ingredient) {
-              setState(() {
-                _focused = false;
-              });
-              print('on leave');
-            },
-            builder: (context, list, rejects) {
-              return LayoutBuilder(
-                builder: (context, constraints) {
-                  return Center(
-                    child: AnimatedContainer(
-                      duration: Duration(milliseconds: 400),
-                      height: _focused
-                          ? constraints.maxHeight
-                          : constraints.maxHeight - 50,
-                      child: Stack(
-                        children: [
-                          Image.asset('assets/dish.png'),
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Image.asset('assets/pizza-1.png'),
+        Column(
+          children: [
+            Expanded(
+              child: DragTarget<Ingredient>(
+                onAccept: (ingredient) {
+                  setState(() {
+                    _focused = false;
+                    _pizzaPrice++;
+                  });
+                  _buildIngredientsAnimation();
+                  _animationController.forward(from: 0.0);
+                  print('on accept');
+                },
+                onWillAccept: (ingredient) {
+                  print('will accept');
+                  setState(() {
+                    _focused = true;
+                  });
+                  for (Ingredient i in _listIngredients) {
+                    if (i.compare(ingredient)) {
+                      return false;
+                    }
+                  }
+                  _listIngredients.add(ingredient);
+                  return true;
+                },
+                onLeave: (ingredient) {
+                  setState(() {
+                    _focused = false;
+                  });
+                  print('on leave');
+                },
+                builder: (context, list, rejects) {
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      _pizzaConstrains = constraints;
+                      return Center(
+                        child: AnimatedContainer(
+                          duration: Duration(milliseconds: 400),
+                          height: _focused
+                              ? constraints.maxHeight
+                              : constraints.maxHeight - 50,
+                          child: Stack(
+                            children: [
+                              Image.asset('assets/dish.png'),
+                              Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Image.asset('assets/pizza-1.png'),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   );
                 },
-              );
-            },
-          ),
+              ),
+            ),
+            const SizedBox(height: 5.0),
+            Text(
+              '\$${_pizzaPrice.toString()}',
+              style: TextStyle(
+                color: Colors.brown,
+                fontSize: 30.0,
+                fontWeight: FontWeight.bold,
+              ),
+            )
+          ],
         ),
-        const SizedBox(height: 5.0),
-        Text(
-          '\$${pizzaPrice.toString()}',
-          style: TextStyle(
-            color: Colors.brown,
-            fontSize: 30.0,
-            fontWeight: FontWeight.bold,
-          ),
+        AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, _) {
+            return _buildIngredientsWidget();
+          },
         )
       ],
     );
   }
 }
 
-class PizzaCartButton extends StatelessWidget {
-  const PizzaCartButton({Key key}) : super(key: key);
+class PizzaCartButton extends StatefulWidget {
+  const PizzaCartButton({Key key, this.onTap}) : super(key: key);
+
+  final VoidCallback onTap;
+
+  @override
+  _PizzaCartButtonState createState() => _PizzaCartButtonState();
+}
+
+class _PizzaCartButtonState extends State<PizzaCartButton>
+    with SingleTickerProviderStateMixin {
+  AnimationController _animationController;
+
+  @override
+  void initState() {
+    _animationController = AnimationController(
+      vsync: this,
+      // upperBound: 1.0,
+      // lowerBound: 1.5,
+      duration: const Duration(milliseconds: 150),
+      reverseDuration: const Duration(milliseconds: 200),
+    );
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _animateButton() async {
+    await _animationController.forward(from: 0.0);
+    await _animationController.reverse();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10.0),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.orange.withOpacity(0.5),
-            Colors.orange,
-          ],
-        ),
-      ),
-      child: Icon(
-        Icons.add_shopping_cart_sharp,
-        color: Colors.brown,
-        size: 35.0,
-      ),
-    );
+    return GestureDetector(
+        onTap: () {
+          widget.onTap();
+          _animateButton();
+        },
+        child: AnimatedBuilder(
+          animation: _animationController,
+          child: Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.orange.withOpacity(0.5),
+                    Colors.orange,
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 15.0,
+                    offset: Offset(0.0, 4.0),
+                    spreadRadius: 4.0,
+                  ),
+                ]),
+            child: Icon(
+              Icons.add_shopping_cart_sharp,
+              color: Colors.white,
+              size: 35.0,
+            ),
+          ),
+          builder: (context, child) {
+            return Transform.scale(
+              scale: 1 - _animationController.value,
+              child: child,
+            );
+          },
+        ));
   }
 }
 
