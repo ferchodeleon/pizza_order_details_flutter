@@ -243,7 +243,20 @@ class _PizzaDetailsState extends State<PizzaDetails>
                               : constraints.maxHeight - 50,
                           child: Stack(
                             children: [
-                              Image.asset('assets/dish.png'),
+                              DecoratedBox(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 15.0,
+                                      color: Colors.black26,
+                                      offset: Offset(0.0, 3.0),
+                                      spreadRadius: 5.0,
+                                    ),
+                                  ],
+                                ),
+                                child: Image.asset('assets/dish.png'),
+                              ),
                               Padding(
                                 padding: const EdgeInsets.all(10.0),
                                 child: Image.asset('assets/pizza-1.png'),
