@@ -45,7 +45,7 @@ class PizzaOrderDetails extends StatelessWidget {
                     child: PizzaDetails(),
                   ),
                   Expanded(
-                    flex: 2,
+                    flex: 1,
                     child: PizzaIngredients(),
                   )
                 ],
@@ -416,7 +416,19 @@ class PizzaIngredientsItem extends StatelessWidget {
         data: ingredient,
         child: Padding(
           padding: const EdgeInsets.all(10.0),
-          child: child,
+          child: Column(
+            children: [
+              child,
+              SizedBox(height: 10.0),
+              Text(
+                ingredient.name,
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
