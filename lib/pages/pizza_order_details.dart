@@ -76,6 +76,26 @@ class PizzaDetails extends StatefulWidget {
   _PizzaDetailsState createState() => _PizzaDetailsState();
 }
 
+enum _PizzaSizeValue { s, m, l }
+
+class _PizzaSizeState {
+  _PizzaSizeState(this.value) : factor = _getFactorBySize(value);
+  final _PizzaSizeValue value;
+  final double factor;
+
+  static double _getFactorBySize(_PizzaSizeValue value) {
+    switch (value) {
+      case _PizzaSizeValue.s:
+        return 0.78;
+      case _PizzaSizeValue.m:
+        return 0.88;
+      case _PizzaSizeValue.l:
+        return 1.00;
+    }
+    return 1.0;
+  }
+}
+
 class _PizzaDetailsState extends State<PizzaDetails>
     with SingleTickerProviderStateMixin {
   final _listIngredients = <Ingredient>[];
@@ -84,6 +104,9 @@ class _PizzaDetailsState extends State<PizzaDetails>
   AnimationController _animationController;
   List<Animation> _animationList = <Animation>[];
   BoxConstraints _pizzaConstrains;
+  final _notifierPizzaSize = ValueNotifier<_PizzaSizeState>(
+    _PizzaSizeState(_PizzaSizeValue.m),
+  );
 
   Widget _buildIngredientsWidget() {
     List<Widget> elements = [];
@@ -235,36 +258,48 @@ class _PizzaDetailsState extends State<PizzaDetails>
                   return LayoutBuilder(
                     builder: (context, constraints) {
                       _pizzaConstrains = constraints;
-                      return Center(
-                        child: AnimatedContainer(
-                          duration: Duration(milliseconds: 400),
-                          height: _focused
-                              ? constraints.maxHeight
-                              : constraints.maxHeight - 50,
-                          child: Stack(
-                            children: [
-                              DecoratedBox(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      blurRadius: 15.0,
-                                      color: Colors.black26,
-                                      offset: Offset(0.0, 3.0),
-                                      spreadRadius: 5.0,
+                      return ValueListenableBuilder<_PizzaSizeState>(
+                          valueListenable: _notifierPizzaSize,
+                          builder: (context, pizzaSize, _) {
+                            return Stack(
+                              children: [
+                                Center(
+                                  child: AnimatedContainer(
+                                    duration: Duration(milliseconds: 400),
+                                    height: _focused
+                                        ? constraints.maxHeight *
+                                            pizzaSize.factor
+                                        : constraints.maxHeight *
+                                                pizzaSize.factor -
+                                            50,
+                                    child: Stack(
+                                      children: [
+                                        DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                blurRadius: 15.0,
+                                                color: Colors.black26,
+                                                offset: Offset(0.0, 3.0),
+                                                spreadRadius: 5.0,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Image.asset('assets/dish.png'),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child:
+                                              Image.asset('assets/pizza-1.png'),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
-                                child: Image.asset('assets/dish.png'),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Image.asset('assets/pizza-1.png'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+                              ],
+                            );
+                          });
                     },
                   );
                 },
@@ -278,7 +313,42 @@ class _PizzaDetailsState extends State<PizzaDetails>
                 fontSize: 30.0,
                 fontWeight: FontWeight.bold,
               ),
-            )
+            ),
+            const SizedBox(height: 20.0),
+            ValueListenableBuilder<_PizzaSizeState>(
+                valueListenable: _notifierPizzaSize,
+                builder: (context, pizzaSize, _) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      PizzaSizeButton(
+                        text: 'S',
+                        onTap: () {
+                          _notifierPizzaSize.value =
+                              _PizzaSizeState(_PizzaSizeValue.s);
+                        },
+                        selected: pizzaSize.value == _PizzaSizeValue.s,
+                      ),
+                      PizzaSizeButton(
+                        text: 'M',
+                        onTap: () {
+                          _notifierPizzaSize.value =
+                              _PizzaSizeState(_PizzaSizeValue.m);
+                        },
+                        selected: pizzaSize.value == _PizzaSizeValue.m,
+                      ),
+                      PizzaSizeButton(
+                        text: 'L',
+                        onTap: () {
+                          _notifierPizzaSize.value =
+                              _PizzaSizeState(_PizzaSizeValue.l);
+                        },
+                        selected: pizzaSize.value == _PizzaSizeValue.l,
+                      ),
+                    ],
+                  );
+                }),
+            const SizedBox(height: 20.0),
           ],
         ),
         AnimatedBuilder(
@@ -288,6 +358,55 @@ class _PizzaDetailsState extends State<PizzaDetails>
           },
         )
       ],
+    );
+  }
+}
+
+class PizzaSizeButton extends StatelessWidget {
+  const PizzaSizeButton({
+    Key key,
+    this.selected,
+    this.text,
+    this.onTap,
+  }) : super(key: key);
+
+  final bool selected;
+  final String text;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 5.0),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      spreadRadius: 3.0,
+                      color: Colors.black12,
+                      offset: Offset(0.0, 2.0),
+                      blurRadius: 5.0,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Text(
+              text,
+              style: TextStyle(
+                color: Colors.brown,
+                fontWeight: selected ? FontWeight.bold : FontWeight.w400,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
