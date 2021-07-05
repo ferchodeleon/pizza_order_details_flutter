@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 
 class Ingredient {
-  const Ingredient(this.image, this.positions);
+  const Ingredient(this.name, this.image, this.positions);
+  final String name;
   final String image;
   final List<Offset> positions;
 
@@ -10,6 +11,7 @@ class Ingredient {
 
 final ingredients = const <Ingredient>[
   Ingredient(
+    'Chili',
     'assets/chili.png',
     <Offset>[
       Offset(0.2, 0.2),
@@ -20,6 +22,7 @@ final ingredients = const <Ingredient>[
     ],
   ),
   Ingredient(
+    'Olive',
     'assets/olive.png',
     <Offset>[
       Offset(0.2, 0.35),
@@ -30,6 +33,7 @@ final ingredients = const <Ingredient>[
     ],
   ),
   Ingredient(
+    'Onion',
     'assets/onion.png',
     <Offset>[
       Offset(0.2, 0.65),
@@ -40,6 +44,7 @@ final ingredients = const <Ingredient>[
     ],
   ),
   Ingredient(
+    'Pea',
     'assets/pea.png',
     <Offset>[
       Offset(0.2, 0.35),
@@ -50,6 +55,7 @@ final ingredients = const <Ingredient>[
     ],
   ),
   Ingredient(
+    'Pickle',
     'assets/pickle.png',
     <Offset>[
       Offset(0.2, 0.65),
@@ -60,6 +66,7 @@ final ingredients = const <Ingredient>[
     ],
   ),
   Ingredient(
+    'Potate',
     'assets/potato.png',
     <Offset>[
       Offset(0.2, 0.2),
