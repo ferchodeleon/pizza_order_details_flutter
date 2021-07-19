@@ -10,6 +10,12 @@ class PizzaOrderBloC extends ChangeNotifier {
     notifierTotal.value++;
   }
 
+  void removeIngredient(Ingredient ingredient) {
+    listIngredients.remove(ingredient);
+    notifierTotal.value--;
+    notifyListeners();
+  }
+
   bool containsIngredient(Ingredient ingredient) {
     for (Ingredient i in listIngredients) {
       if (i.compare(ingredient)) {
