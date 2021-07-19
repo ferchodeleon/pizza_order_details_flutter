@@ -334,34 +334,6 @@ class _PizzaDetailsState extends State<PizzaDetails>
                     fontWeight: FontWeight.bold,
                   ),
                 );
-                // return AnimatedSwitcher(
-                //   duration: const Duration(milliseconds: 300),
-                //   transitionBuilder: (child, animation) {
-                //     return FadeTransition(
-                //       opacity: animation,
-                //       child: SlideTransition(
-                //         position: animation.drive(
-                //           Tween<Offset>(
-                //             begin: Offset(0.0, 0.0),
-                //             end: Offset(
-                //               0.0,
-                //               animation.value,
-                //             ),
-                //           ),
-                //         ),
-                //         child: child,
-                //       ),
-                //     );
-                //   },
-                //   child: Text(
-                //     '\$$totalValue',
-                //     style: TextStyle(
-                //       color: Colors.brown,
-                //       fontSize: 30.0,
-                //       fontWeight: FontWeight.bold,
-                //     ),
-                //   ),
-                // );
               },
             ),
             const SizedBox(height: 20.0),
